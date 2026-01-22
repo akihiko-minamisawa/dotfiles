@@ -39,10 +39,17 @@ return {
       },
     })
 
-    -- Keymapping: Toggle Neo-tree with <leader>e
+    -- Keymapping: Toggle Neo-tree with <leader>t
     vim.keymap.set("n", "<leader>t", ":Neotree toggle<CR>", {
       desc = "Toggle Neo-tree",
       silent = true
+    })
+
+    -- Open Neo-tree on startup
+    vim.api.nvim_create_autocmd("VimEnter", {
+      callback = function()
+        vim.cmd("Neotree show")
+      end,
     })
   end,
 }
