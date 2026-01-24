@@ -13,6 +13,10 @@ return {
       popup_border_style = "rounded",
       enable_git_status = true,
       enable_diagnostics = true,
+      default_component_configs = {
+        type = { enabled = false },
+        last_modified = { enabled = false },
+      },
       filesystem = {
         follow_current_file = {
           enabled = true,
