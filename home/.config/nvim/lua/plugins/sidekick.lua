@@ -1,3 +1,13 @@
+-- .claudeフォルダが存在する場合は -c オプションを付けて継続モードで起動
+local function get_claude_cmd()
+  local claude_dir = vim.fn.getcwd() .. "/.claude"
+  if vim.fn.isdirectory(claude_dir) == 1 then
+    return { "claude", "-c" }
+  else
+    return { "claude" }
+  end
+end
+
 return {
   "folke/sidekick.nvim",
   opts = {
@@ -8,7 +18,7 @@ return {
         enabled = true,
       },
       tools = {
-        claude = { cmd = { "claude", "-c" } },
+        claude = { cmd = get_claude_cmd() },
       },
     },
   },
