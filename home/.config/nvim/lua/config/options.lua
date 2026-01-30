@@ -41,6 +41,9 @@ if vim.env.JAVA_HOME == nil or vim.env.JAVA_HOME == "" then
   vim.env.JAVA_HOME = vim.fn.system("mise where java"):gsub("\n", "")
 end
 
+-- Set colorscheme
+vim.cmd.colorscheme("habamax")
+
 -- Enable transparent background to match Wezterm's 85% opacity
 vim.opt.termguicolors = true
 vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
