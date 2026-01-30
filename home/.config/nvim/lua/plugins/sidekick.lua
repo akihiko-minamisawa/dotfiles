@@ -1,4 +1,3 @@
--- .claudeフォルダが存在する場合は -c オプションを付けて継続モードで起動
 local function get_claude_cmd()
   local claude_dir = vim.fn.getcwd() .. "/.claude"
   if vim.fn.isdirectory(claude_dir) == 1 then
