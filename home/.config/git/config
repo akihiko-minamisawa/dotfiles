@@ -1,0 +1,21 @@
+[pull]
+  ff = only
+  rebase = false
+[push]
+  autoSetupRemote = true
+[core]
+  hooksPath = ~/.config/git/hooks
+  attributesFile = ~/.config/git/attributes
+	excludesfile = ~/.gitignore_global
+[submodule]
+  recurse = true
+[user]
+	name = Akihiko Minamisawa
+	email = akihiko-minamisawa@mail.nissan.co.jp
+[init]
+	defaultBranch = main
+[commit]
+	template = ~/.stCommitMsg
+[ghq]
+	root = ~/dev/src
+
