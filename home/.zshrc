@@ -42,3 +42,15 @@ function cf() {
   fi
 }
 
+# Select a file using fzf and open it in nvim (-a to include hidden files)
+function of() {
+  local file
+  local fd_opts="--type f"
+  if [[ "$1" == "-a" || "$1" == "--all" ]]; then
+    fd_opts="$fd_opts --hidden"
+  fi
+  file=$(fd ${=fd_opts} | fzf --preview "bat --color=always {} 2>/dev/null || cat {}")
+  if [[ -n "$file" ]]; then
+    nvim "$file"
+  fi
+}

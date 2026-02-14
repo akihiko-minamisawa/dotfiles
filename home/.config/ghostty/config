@@ -1,0 +1,33 @@
+font-size = 12
+window-width = 240
+window-height = 60
+background = 000000
+background-opacity = 0.75
+background-blur-radius = 20
+macos-titlebar-style = hidden
+
+# Color scheme
+foreground = c0c0c0
+cursor-color = 52ad70
+selection-foreground = 000000
+selection-background = fffacd
+
+# ANSI colors
+palette = 0=#000000
+palette = 1=#cc5555
+palette = 2=#55cc55
+palette = 3=#cdcd55
+palette = 4=#5555cc
+palette = 5=#cc55cc
+palette = 6=#7acaca
+palette = 7=#cccccc
+
+# Bright colors
+palette = 8=#555555
+palette = 9=#ff5555
+palette = 10=#55ff55
+palette = 11=#ffff55
+palette = 12=#5555ff
+palette = 13=#ff55ff
+palette = 14=#55ffff
+palette = 15=#ffffff
