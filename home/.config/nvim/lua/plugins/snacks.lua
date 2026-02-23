@@ -45,6 +45,7 @@ return {
     { "<leader>fr", function() Snacks.picker.recent() end,  desc = "Recent files" },
     { "<leader>gb", function() Snacks.git.blame_line() end, desc = "Git blame line" },
     { "<leader>gB", function() Snacks.gitbrowse() end,      desc = "Git browse" },
+    { "<leader>gl", function() Snacks.lazygit() end,        desc = "Lazygit" },
     { "<leader>t",  function() Snacks.explorer() end,       desc = "Toggle Explorer" },
   },
 }

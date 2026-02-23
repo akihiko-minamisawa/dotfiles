@@ -7,6 +7,6 @@ return {
     lsp = { auto_attach = true },
   },
   init = function()
-    vim.o.winbar = "%{%v:lua.require('nvim-navic').get_location()%}"
+    vim.o.winbar = "%t > %{%v:lua.require('nvim-navic').get_location()%}"
   end,
 }
