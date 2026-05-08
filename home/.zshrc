@@ -1,6 +1,7 @@
 eval "$(sheldon source)"
 
 export EDITOR=nvim
+export ZK_NOTEBOOK_DIR="$HOME/dev/src/github.com/akihiko-minamisawa/notes"
 #export JAVA_TOOL_OPTIONS="-Duser.language=ja -Duser.country=JP"
 
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
