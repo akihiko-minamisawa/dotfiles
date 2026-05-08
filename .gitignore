@@ -1,0 +1,7 @@
+.DS_Store
+
+# Claude Code runtime state — only skills/, settings.json, and statusline.sh are tracked.
+home/.claude/*
+!home/.claude/skills/
+!home/.claude/settings.json
+!home/.claude/statusline.sh
