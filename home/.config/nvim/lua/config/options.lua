@@ -38,6 +38,13 @@ vim.g.clipboard = {
 -- Backspace behavior
 opt.backspace = "indent,eol,start"
 
+-- Auto-reload files changed outside Neovim
+opt.autoread = true
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+  pattern = "*",
+  command = "checktime",
+})
+
 -- Split windows
 opt.splitright = true
 opt.splitbelow = true
