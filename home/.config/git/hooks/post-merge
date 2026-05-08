@@ -1,0 +1,6 @@
+#!/bin/sh
+
+if git status | grep -q "modified:"; then
+    # commit if some files added in pre-merge-commit
+    git commit -C HEAD --no-edit --no-verify >/dev/null 2>&1
+fi

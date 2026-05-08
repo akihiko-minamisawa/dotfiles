@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# do pre-commit (but pre-merge-commit does not commit files added in itself，unlike pre-commit)
+DIR_BASE=$(cd $(dirname ${0}); pwd)
+${DIR_BASE}/pre-commit
