@@ -1,5 +1,8 @@
 .DS_Store
 
+# nix build artifact (home-manager build)
+/result
+
 # Claude Code runtime state — only skills/, settings.json, and statusline.sh are tracked.
 home/.claude/*
 !home/.claude/skills/
