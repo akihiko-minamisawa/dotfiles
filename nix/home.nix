@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   home.username = "aki";
@@ -15,7 +15,88 @@
 
   programs.starship = {
     enable = true;
+    # sheldon already runs `starship init zsh` (plugins.toml); don't double-inject.
+    enableZshIntegration = false;
     settings = builtins.fromTOML (builtins.readFile ./starship.toml);
+  };
+
+  programs.zsh = {
+    enable = true;
+    # sheldon (plugins.toml) owns compinit / mise / starship / plugins; let it.
+    enableCompletion = false;
+
+    shellAliases = {
+      emacs = "nvim";
+      code = "nvim";
+    };
+
+    sessionVariables = {
+      EDITOR = "nvim";
+      ZK_NOTEBOOK_DIR = "${config.home.homeDirectory}/dev/src/github.com/akihiko-minamisawa/notes";
+      GOOGLE_CLOUD_PROJECT = "backend-credentials";
+    };
+
+    # Homebrew PATH/env setup (login shells). Previously an untracked ~/.zprofile.
+    profileExtra = ''
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+    '';
+
+    initContent = lib.mkMerge [
+      # Load plugins first, like the original .zshrc.
+      (lib.mkOrder 500 ''
+        eval "$(sheldon source)"
+      '')
+      (lib.mkOrder 1000 ''
+        ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+        export PATH="/Users/aki/.rd/bin:$PATH"
+        ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+
+        # Azure cli setting
+        autoload bashcompinit && bashcompinit
+        source $(brew --prefix)/etc/bash_completion.d/az
+
+        export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+        export PATH="$HOME/.local/bin:$PATH"
+
+        # Added by Antigravity
+        export PATH="/Users/aki/.antigravity/antigravity/bin:$PATH"
+
+        # Select and cd to a ghq-managed repository using fzf
+        function gf() {
+          local dir
+          dir=$(ghq list -p | fzf --preview "ls -la {}")
+          if [[ -n "$dir" ]]; then
+            cd "$dir"
+          fi
+        }
+
+        # Select and cd to a directory using fzf (-a to include hidden directories)
+        function cf() {
+          local dir
+          local fd_opts="--type d"
+          if [[ "$1" == "-a" || "$1" == "--all" ]]; then
+            fd_opts="$fd_opts --hidden"
+          fi
+          dir=$(fd ''${=fd_opts} | fzf)
+          if [[ -n "$dir" ]]; then
+            cd "$dir"
+          fi
+        }
+
+        # Select a file using fzf and open it in nvim (-a to include hidden files)
+        function of() {
+          local file
+          local fd_opts="--type f"
+          if [[ "$1" == "-a" || "$1" == "--all" ]]; then
+            fd_opts="$fd_opts --hidden"
+          fi
+          file=$(fd ''${=fd_opts} | fzf --preview "bat --color=always {} 2>/dev/null || cat {}")
+          if [[ -n "$file" ]]; then
+            nvim "$file"
+          fi
+        }
+      '')
+    ];
   };
 
   programs.git = {
