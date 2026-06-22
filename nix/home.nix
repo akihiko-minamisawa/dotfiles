@@ -28,6 +28,9 @@
     shellAliases = {
       emacs = "nvim";
       code = "nvim";
+      # Claude Code workspace launchers (~/cc = general AI assistant workspace).
+      # `cl` chosen over `cc` to avoid shadowing /usr/bin/cc (the C compiler).
+      cl = "cd ~/cc && claude";
     };
 
     sessionVariables = {
