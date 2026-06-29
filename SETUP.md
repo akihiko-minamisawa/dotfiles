@@ -11,15 +11,15 @@ PC 入替時にこの環境を再構築するための手順。各ステップ�
 | `~/.claude` 全体(symlink 先) | dotfiles の `home/.claude`(install.sh が symlink を張る) | このリポジトリ |
 | Claude skills / settings.json / statusline | dotfiles(追跡対象) | `home/.claude/` |
 | **Claude agents(BFF/VPA)** | **private marketplace のプラグイン**を再追加 → `enabledPlugins` で有効化 | `A-CMS/xn6-cc-marketplace` |
-| 旧ローカル agents(レガシー・退役予定) | 任意。`claude-local-backup` を手動コピー → restore.sh | `~/claude-local-backup` |
 | **恒久知識(旧 Claude memory)** | **notes に同梱のテキスト**(`notes/knowledge/*.md`)。recall は `~/cc/CLAUDE.md` の索引 | `notes/knowledge/` |
 | A-CMS / 個人のコードリポジトリ | **clone**(`bin/clone-repos.sh`) | `~/dev/src/github.com/...` |
 | **notes 知識ベース**(remote 無し) | **手動コピー** | `~/dev/src/github.com/akihiko-minamisawa/notes` |
 | **~/cc ワークスペース**(local-only) | **手動コピー**(git 履歴ごと) | `~/cc` |
 | MCP コネクタ / gh / Azure 認証 | **手動再認証**(スクリプト化不可) | 下記チェックリスト |
 
-> 旧 PC で実施しておくこと: 手動コピー対象(`notes` / `~/cc`、レガシー agents が要るなら `~/claude-local-backup`)を
-> 外付け or AirDrop で新 PC へ。恒久知識は `notes` に入っているので別途バックアップ不要。
+> 旧 PC で実施しておくこと: 手動コピー対象(`notes` / `~/cc`)を外付け or AirDrop で新 PC へ。
+> 恒久知識は `notes/knowledge/` に入っているので別途バックアップ不要。
+> agents は marketplace から復元する(ローカル `~/.claude/agents/` の旧定義は gitignore=非バックアップ。退役予定)。
 
 ---
 
@@ -74,7 +74,6 @@ A-CMS と akihiko-minamisawa の全リポジトリを `~/dev/src/github.com/<own
 ```
 ~/dev/src/github.com/akihiko-minamisawa/notes      # zk 知識ベース + knowledge/(恒久知識)(.git ごと)
 ~/cc                                               # 作業ワークスペース(.git ごと)
-~/claude-local-backup                              # ※レガシー agents が要る場合のみ
 ```
 
 コピー後:
@@ -85,9 +84,6 @@ cd ~/dev/src/github.com/akihiko-minamisawa/notes && zk index
 
 # ~/cc から知識ベースへの symlink を再作成(cc では gitignore のため)
 ln -sfn ~/dev/src/github.com/akihiko-minamisawa/notes ~/cc/notes
-
-# (任意) レガシーのローカル agents を ~/.claude へ戻す場合のみ
-# ~/claude-local-backup/bin/restore.sh
 ```
 
 > 恒久知識(旧 memory)は `notes/knowledge/*.md` にテキストで入っており、上の notes コピーで一緒に復元される。
@@ -123,5 +119,4 @@ head ~/cc/notes/jp-bff-members.md         # notes symlink 経由で読めるか
 ```sh
 cd ~/.../notes && git add -A && git commit  # 知識ベース + knowledge/(恒久知識)の履歴
 cd ~/cc && git add -A && git commit          # 作業ワークスペースの履歴
-# (レガシー agents をまだ使うなら) ~/claude-local-backup/bin/backup.sh
 ```
