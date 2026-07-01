@@ -5,6 +5,11 @@
   home.homeDirectory = "/Users/aki";
   home.stateVersion = "25.11";
 
+  # nix-darwin installs darwin-rebuild (and any system packages) here. Since
+  # darwin.nix sets programs.zsh.enable = false (home-manager owns the shell),
+  # nix-darwin does not add this to PATH via /etc/zshrc — do it here instead.
+  home.sessionPath = [ "/run/current-system/sw/bin" ];
+
   home.packages = with pkgs; [
     ripgrep
     fd
