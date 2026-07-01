@@ -9,21 +9,35 @@
     ripgrep
     fd
     jq
+    # Extra completion definitions; land in the nix profile's
+    # share/zsh/site-functions, which home-manager already puts on fpath.
+    zsh-completions
   ];
 
   programs.home-manager.enable = true;
 
   programs.starship = {
     enable = true;
-    # sheldon already runs `starship init zsh` (plugins.toml); don't double-inject.
-    enableZshIntegration = false;
+    # home-manager owns `starship init zsh` now that sheldon is gone.
+    enableZshIntegration = true;
     settings = builtins.fromTOML (builtins.readFile ./starship.toml);
+  };
+
+  # mise activation, previously run via sheldon (`eval "$(mise activate zsh)"`).
+  # Moves mise off Homebrew onto nixpkgs; installed tool versions live in
+  # ~/.local/share/mise and are independent of which mise binary reads them.
+  programs.mise = {
+    enable = true;
+    enableZshIntegration = true;
   };
 
   programs.zsh = {
     enable = true;
-    # sheldon (plugins.toml) owns compinit / mise / starship / plugins; let it.
-    enableCompletion = false;
+    # home-manager now owns what sheldon used to: compinit + zsh plugins.
+    # NOTE: these load synchronously (sheldon used zsh-defer for async load).
+    enableCompletion = true;
+    autosuggestion.enable = true;
+    syntaxHighlighting.enable = true;
 
     shellAliases = {
       emacs = "nvim";
@@ -44,12 +58,8 @@
       eval "$(/opt/homebrew/bin/brew shellenv)"
     '';
 
-    initContent = lib.mkMerge [
-      # Load plugins first, like the original .zshrc.
-      (lib.mkOrder 500 ''
-        eval "$(sheldon source)"
-      '')
-      (lib.mkOrder 1000 ''
+    # Ordered after home-manager's own compinit / plugin / integration blocks.
+    initContent = lib.mkOrder 1000 ''
         ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
         export PATH="/Users/aki/.rd/bin:$PATH"
         ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
@@ -98,8 +108,7 @@
             nvim "$file"
           fi
         }
-      '')
-    ];
+    '';
   };
 
   programs.git = {
