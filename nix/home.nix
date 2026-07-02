@@ -5,11 +5,6 @@
   home.homeDirectory = "/Users/aki";
   home.stateVersion = "25.11";
 
-  # nix-darwin installs darwin-rebuild (and any system packages) here. Since
-  # darwin.nix sets programs.zsh.enable = false (home-manager owns the shell),
-  # nix-darwin does not add this to PATH via /etc/zshrc — do it here instead.
-  home.sessionPath = [ "/run/current-system/sw/bin" ];
-
   home.packages = with pkgs; [
     ripgrep
     fd
@@ -68,6 +63,14 @@
         ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
         export PATH="/Users/aki/.rd/bin:$PATH"
         ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+
+        # nix-darwin system profile (darwin-rebuild + any system packages).
+        # Kept here in .zshrc rather than home.sessionPath: sessionPath lands in
+        # ~/.zshenv behind the __HM_SESS_VARS_SOURCED guard, which is skipped by
+        # shells that inherit an already-initialized env (e.g. panes from a
+        # long-running tmux server). .zshrc runs unconditionally per interactive
+        # shell, so darwin-rebuild is always on PATH.
+        export PATH="/run/current-system/sw/bin:$PATH"
 
         # Azure cli setting
         autoload bashcompinit && bashcompinit
