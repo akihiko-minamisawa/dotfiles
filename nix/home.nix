@@ -91,13 +91,18 @@
         export PATH="/Users/aki/.rd/bin:$PATH"
         ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
 
-        # nix-darwin system profile (darwin-rebuild + any system packages).
-        # Kept here in .zshrc rather than home.sessionPath: sessionPath lands in
-        # ~/.zshenv behind the __HM_SESS_VARS_SOURCED guard, which is skipped by
-        # shells that inherit an already-initialized env (e.g. panes from a
-        # long-running tmux server). .zshrc runs unconditionally per interactive
-        # shell, so darwin-rebuild is always on PATH.
-        export PATH="/run/current-system/sw/bin:$PATH"
+        # Nix profiles first: macOS path_helper (/etc/zprofile) reorders system
+        # dirs to the front, leaving ~/.nix-profile/bin dead last — so any
+        # /usr/bin or brew copy shadowed the declared nix package (e.g. system
+        # jq 1.7.1 over nix jq 1.8.1). Prepending here makes declared packages
+        # win. Safety verified before enabling: nix man renders system man
+        # pages fine, nix git == brew git 2.53.0.
+        # Kept in .zshrc rather than home.sessionPath: sessionPath lands in
+        # ~/.zshenv behind the __HM_SESS_VARS_SOURCED guard, which is skipped
+        # by shells inheriting an initialized env (e.g. panes of a long-running
+        # tmux server). .zshrc runs unconditionally per interactive shell.
+        # Order: user profile > nix-darwin system profile (darwin-rebuild etc).
+        export PATH="$HOME/.nix-profile/bin:/run/current-system/sw/bin:$PATH"
 
         # Azure cli setting (completion ships with the nix azure-cli package)
         autoload bashcompinit && bashcompinit

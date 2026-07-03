@@ -35,9 +35,10 @@
     onActivation = {
       autoUpdate = false;
       upgrade = false;
-      # "none" while the inventory settles; raise to "uninstall"/"zap" later
-      # so undeclared packages get removed on switch.
-      cleanup = "none";
+      # Uninstall anything not declared here (dry-run verified 2026-07-03:
+      # inventory matches reality, nothing would be removed today). Not "zap"
+      # — that would also purge cask app data via zap stanzas.
+      cleanup = "uninstall";
     };
 
     brews = [
