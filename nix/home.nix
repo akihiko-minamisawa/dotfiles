@@ -24,6 +24,9 @@
     tree
     yq-go # brew yq (mikefarah Go implementation), not the Python yq
     zk
+    # was brew azure/kubelogin/kubelogin; moved off brew when tap trust
+    # enforcement broke `brew bundle` (see darwin.nix)
+    kubelogin
   ];
 
   programs.home-manager.enable = true;

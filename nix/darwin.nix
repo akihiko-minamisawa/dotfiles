@@ -40,11 +40,6 @@
       cleanup = "none";
     };
 
-    taps = [
-      "azure/kubelogin"
-      "sdkman/tap"
-    ];
-
     brews = [
       # gdal/postgis geo stack + the libraries local builds link against
       "apache-arrow"
@@ -82,11 +77,12 @@
       "flyway"
       "openjdk"
       # version managers that manage their own installs
+      # (sdkman dropped 2026-07-03: untrusted-tap refusal broke brew bundle;
+      # Java is covered by the declared openjdk + mise. kubelogin moved to
+      # nixpkgs for the same reason. Both taps removed with them.)
       "tfenv"
-      "sdkman/tap/sdkman-cli"
       # CLIs pending migration to nixpkgs (wave 2: shell-integration edits needed)
       "azure-cli"
-      "azure/kubelogin/kubelogin"
       "gemini-cli"
       "gnupg"
       "mysql-client"
