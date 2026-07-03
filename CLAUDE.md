@@ -4,40 +4,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository purpose
 
-Personal macOS dotfiles. Configs under `home/` mirror a path inside `$HOME` and are deployed via `install.sh` symlinks; the repo is **mid-migration to Nix** (flake + home-manager), so a growing subset is instead deployed declaratively from `nix/` via home-manager. Both mechanisms coexist.
-
-## Install / deploy
+Personal macOS dotfiles, fully declarative via Nix. Two entry points own everything:
 
 ```sh
-./install.sh                       # (re)create symlinks from home/ into $HOME
-brew bundle --file=~/Brewfile      # after install.sh has linked the Brewfile
-home-manager switch --flake .#aki  # apply the nix/home-manager-managed configs
+home-manager switch --flake .#aki                        # user env: packages, shell, config symlinks
+sudo darwin-rebuild switch --flake .#minamisawa-macbook  # system + Homebrew (brews/casks/mas)
 ```
 
-`install.sh` symlinks each top-level entry in `home/` to the same name under `$HOME`. **Exception:** `home/.config/` is not linked wholesale — its children are linked individually into `$HOME/.config/` so that unmanaged tools already using `~/.config` keep working. Existing non-symlink files are moved aside to `*.backup` before linking; existing symlinks are replaced.
+`install.sh` and the hand-maintained `home/Brewfile` are retired. New-Mac bootstrap lives in `SETUP.md`.
 
-When adding a new config, place it at the path it should appear under `$HOME` (e.g. `home/.config/foo/bar` → `~/.config/foo/bar`) and re-run `install.sh`. For configs already migrated to home-manager, edit `nix/home.nix` (or files it references) and run `home-manager switch` instead — do **not** also add a `home/` copy, or the two will fight over the same `~` path.
+## Where things are declared
 
-## Nix / home-manager
+- **CLI tools** → `home.packages` in `nix/home.nix` (ripgrep, fd, jq, fzf, gh, ghq, lazygit, tree, yq-go, zk, git-filter-repo, go-migrate, kubelogin, azure-cli, gemini-cli, yarn, neovim, tmux, zsh-completions, …).
+- **Homebrew inventory** → `homebrew` block in `nix/darwin.nix`: brews deliberately kept on brew (gdal/postgis geo stack, brew services like `postgresql@14`/redis/rabbitmq, docker/podman/qemu, erlang/openjdk/flyway, tfenv, mysql-client, gnupg, mas), all casks, all Mac App Store apps. `onActivation.cleanup = "uninstall"` — **anything installed with ad-hoc `brew install` is removed on the next darwin switch**; declare it here instead.
+- **Config files** → `xdg.configFile` in `nix/home.nix` as **out-of-store symlinks** into `home/.config/` (ghostty, nix, nvim, tmux, wezterm, zk), plus `home.file.".claude"` for `~/.claude`. Editing files under `home/` takes effect immediately — no switch needed. nvim must stay out-of-store (lazy.nvim writes `lazy-lock.json` into the config dir). `.claude` has `force = true` because a live Claude Code process recreates `~/.claude` within seconds if it goes missing.
+- **zsh / git / starship / mise** → home-manager modules in `nix/home.nix` (`programs.*`). zsh plugins (autosuggestions, syntax-highlighting, completions) load via home-manager, synchronously. `~/.zshrc` is generated; the fzf helpers `gf`/`cf`/`of`, machine-specific PATH exports, and the Azure CLI completion live in `initContent`.
+- **darwin system** → `nix/darwin.nix`. Intentionally minimal: `nix.enable = false` (official daemon owns `/etc/nix/nix.conf`, preserving the `ssl-cert-file` fix), `programs.zsh/bash.enable = false` (home-manager owns the shell; avoids a second compinit from `/etc/zshrc`).
 
-`flake.nix` (repo root) defines `homeConfigurations.aki` → `nix/home.nix` (`aarch64-darwin`, user `aki`, stateVersion `25.11`). A 4-phase gradual migration off Homebrew/`install.sh` is in progress. Currently home-manager-managed:
+When adding a new tool: prefer `home.packages`; use `homebrew.brews`/`casks` only for GUI apps, brew services, or build-library stacks. When adding a config, put the files under `home/.config/<name>/` and add one `live "<name>"` line to `xdg.configFile`.
 
-- **CLI tools** `ripgrep` / `fd` / `jq` — `home.packages` (removed from Brewfile).
-- **git** — `programs.git` in `nix/home.nix`. `settings` holds the config; `ignores`/`attributes` generate `~/.config/git/{ignore,attributes}`; hooks live in `nix/git/hooks/` and are linked via `xdg.configFile."git/hooks"`. `core.excludesfile` is intentionally unset so git reads the default `~/.config/git/ignore`.
-- **starship** — `programs.starship`, settings read from `nix/starship.toml` via `builtins.fromTOML`. `enableZshIntegration = false` because sheldon already runs `starship init`.
-- **zsh** — `programs.zsh`. Aliases/env in `shellAliases`/`sessionVariables`; the brew `shellenv` (login) lives in `profileExtra`; PATH exports (Rancher `~/.rd/bin`, mysql-client, `~/.local/bin`, Antigravity), the Azure CLI completion, and the `gf`/`cf`/`of` fzf functions are kept verbatim in `initContent` (ordered with `lib.mkOrder`: `eval "$(sheldon source)"` at 500, the rest at 1000). `enableCompletion = false` so sheldon owns compinit. sheldon itself (brew) and `home/.config/sheldon/plugins.toml` are still install.sh-managed — only `~/.zshrc`/`~/.zshenv`/`~/.zprofile` generation moved to home-manager. hm adds its default persistent-history config (was absent before).
+## PATH ordering (deliberate)
 
-`git` and `starship` were removed from the Brewfile (nix is now their source of truth) but their brew binaries may remain installed as transitive dependencies; PATH order decides which runs until the shell config is migrated.
+`.zshrc` prepends `$HOME/.nix-profile/bin:/run/current-system/sw/bin` — macOS `path_helper` would otherwise leave the nix profile last and let `/usr/bin`/brew copies shadow declared packages. This lives in `.zshrc` (not `home.sessionPath`/`.zshenv`) so it survives shells inheriting a stale environment, e.g. panes of a long-running tmux server.
 
 ## Layout worth knowing
 
-- `home/Brewfile` — package manifest; symlinked to `~/Brewfile`. After editing run `brew bundle --file=~/Brewfile`.
-- zsh — `~/.zshrc` is now generated by `programs.zsh` (see Nix section), no longer a `home/.zshrc` symlink. Still delegates plugin loading to `sheldon` (config in `home/.config/sheldon/plugins.toml`, install.sh-managed). Prompt is `starship`, runtime manager is `mise` (both driven by sheldon's `plugins.toml` inlines). Defines `gf`/`cf`/`of` fzf helpers.
 - `home/.config/nvim/` — Neovim config. `init.lua` → `config.options` + `config.lazy`. `lazy.lua` auto-imports every file under `lua/plugins/*.lua`, so adding a plugin = adding one file there (no central registry to update). `lazy-lock.json` is committed.
 - `nix/git/hooks/` — git hooks, deployed to `~/.config/git/hooks/` by home-manager and run for every repo on this machine via `core.hooksPath`. `pre-commit` is Maven-specific (license plugin + third-party-report regeneration) and silently no-ops when `pom.xml` / `license.txt` are absent.
 - `home/.claude/skills/` — user-scoped Claude Code slash commands. Each subdir contains a `SKILL.md` with YAML frontmatter (`name`, `description`, `argument-hint`, `disable-model-invocation`); `$0`, `$1`, … are the positional args passed to the slash command.
+- `bin/clone-repos.sh` — idempotent bulk clone of A-CMS/personal repos (used by SETUP.md).
 
 ## Conventions
 
-- Commit messages in this repo are lowercase, imperative, and scope-terse (e.g. `add fzf and ghq to Brewfile`, `update tmux config`). Match that style.
+- Commit messages in this repo are lowercase, imperative, and scope-terse (e.g. `add fzf to home.packages`, `update tmux config`). Match that style.
 - Don't commit anything under `home/.claude/` other than `skills/` and `settings.json` — the rest is runtime state (`backups/`, `cache/`, `projects/`, `history.jsonl`, credentials, etc.) and must stay untracked.
