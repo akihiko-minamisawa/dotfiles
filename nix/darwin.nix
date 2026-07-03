@@ -81,12 +81,13 @@
       # Java is covered by the declared openjdk + mise. kubelogin moved to
       # nixpkgs for the same reason. Both taps removed with them.)
       "tfenv"
-      # CLIs pending migration to nixpkgs (wave 2: shell-integration edits needed)
-      "azure-cli"
-      "gemini-cli"
-      "gnupg"
+      # kept on brew deliberately: the zshrc PATH entry points at
+      # /opt/homebrew/opt/mysql-client (no clean client-only nixpkgs package)
       "mysql-client"
-      "yarn"
+      # kept on brew: hard dependency of the geo stack (gdal/poppler/postgis
+      # refuse to let it go), so a nix copy would only shadow-duplicate it.
+      # Keyring data (~/.gnupg) is binary-independent anyway.
+      "gnupg"
       # required by masApps below
       "mas"
     ];

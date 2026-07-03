@@ -31,6 +31,14 @@
     # as out-of-store symlinks under xdg.configFile below)
     neovim
     tmux
+    # wave 2: same-version swap from brew (2.85.0); az login state and
+    # extensions live in ~/.azure, unaffected by the binary swap
+    azure-cli
+    gemini-cli
+    # yarn classic; bundles its own node for running itself. Project builds
+    # keep using mise-managed node via PATH. Dropping brew yarn also drops
+    # brew node, which existed only as yarn's dependency.
+    yarn
   ];
 
   programs.home-manager.enable = true;
@@ -91,9 +99,9 @@
         # shell, so darwin-rebuild is always on PATH.
         export PATH="/run/current-system/sw/bin:$PATH"
 
-        # Azure cli setting
+        # Azure cli setting (completion ships with the nix azure-cli package)
         autoload bashcompinit && bashcompinit
-        source $(brew --prefix)/etc/bash_completion.d/az
+        source ~/.nix-profile/share/bash-completion/completions/az.bash
 
         export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
         export PATH="$HOME/.local/bin:$PATH"
