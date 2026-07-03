@@ -193,6 +193,20 @@
     };
   };
 
+  # ~/.claude: live Claude Code state (settings/skills tracked in the repo;
+  # agents/memory gitignored). Out-of-store symlink into the repo — the same
+  # link install.sh used to create. Claude Code writes here constantly, so it
+  # must never resolve into the read-only nix store.
+  home.file.".claude" = {
+    source = config.lib.file.mkOutOfStoreSymlink
+      "${config.home.homeDirectory}/dev/src/github.com/akihiko-minamisawa/dotfiles/home/.claude";
+    # A live Claude Code process recreates ~/.claude within seconds of it
+    # disappearing, so activation may find a foreign dir/link here; overwrite
+    # it instead of aborting the whole switch (the real state lives in the
+    # repo, the recreated one is seconds-old scratch).
+    force = true;
+  };
+
   xdg.configFile = let
     # Live-editable configs, declared here but kept OUT of the nix store:
     # ~/.config/<name> symlinks straight into the repo checkout (the same

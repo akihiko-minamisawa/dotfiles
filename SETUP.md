@@ -7,8 +7,9 @@ PC 入替時にこの環境を再構築するための手順。各ステップ�
 
 | 対象 | 復元方法 | 場所 |
 |---|---|---|
-| shell / git / starship / nvim / CLI ツール / Brewfile | **dotfiles**(clone + install.sh + home-manager) | このリポジトリ |
-| `~/.claude` 全体(symlink 先) | dotfiles の `home/.claude`(install.sh が symlink を張る) | このリポジトリ |
+| shell / git / starship / nvim / CLI ツール | **dotfiles**(clone + `home-manager switch`) | このリポジトリ |
+| Homebrew 一式(brew/cask/mas、宣言は `nix/darwin.nix`) | **dotfiles**(clone + `darwin-rebuild switch`) | このリポジトリ |
+| `~/.claude` 全体(symlink 先) | dotfiles の `home/.claude`(home-manager が symlink を張る) | このリポジトリ |
 | Claude skills / settings.json / statusline | dotfiles(追跡対象) | `home/.claude/` |
 | **Claude agents(BFF/VPA)** | **private marketplace のプラグイン**を再追加 → `enabledPlugins` で有効化 | `A-CMS/xn6-cc-marketplace` |
 | **恒久知識(旧 Claude memory)** | **notes に同梱のテキスト**(`notes/knowledge/*.md`)。recall は `~/cc/CLAUDE.md` の索引 | `notes/knowledge/` |
@@ -26,13 +27,13 @@ PC 入替時にこの環境を再構築するための手順。各ステップ�
 ## 0. 前提ツールのインストール
 
 ```sh
-# Homebrew
+# Homebrew(nix-darwin が brew bundle の実行基盤として使う。casks/mas はこれ経由)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Nix (Determinate Systems installer 等) → flake + home-manager を使うため
+# Nix (Determinate Systems installer 推奨 — daemon の ssl-cert-file を正しく設定する)
 #   インストール後シェル再起動
 
-# gh CLI（Brewfile にも入るが、clone-repos.sh の前に最低限必要）
+# gh CLI(恒久版は home-manager が入れる。clone-repos.sh の前に暫定で必要なだけ)
 brew install gh
 ```
 
@@ -52,12 +53,19 @@ cd ~/dev/src/github.com/akihiko-minamisawa
 git clone ssh://git@github.com/akihiko-minamisawa/dotfiles
 cd dotfiles
 
-./install.sh                        # home/ 配下を $HOME へ symlink（~/.claude もここで張られる）
-brew bundle --file=~/Brewfile       # パッケージ復元
-home-manager switch --flake .#aki   # nix 管理分（zsh/git/starship/CLI tools）を適用
+# ユーザー環境: zsh/git/starship/CLI tools + 設定 symlink(~/.claude・~/.config/* もここで張られる)
+#   初回は flakes 未設定なので NIX_CONFIG で bootstrap
+NIX_CONFIG="experimental-features = nix-command flakes" \
+  nix run home-manager -- switch --flake .#aki
+
+# システム + Homebrew 一式: /etc・launchd + brew/casks/mas を宣言(nix/darwin.nix)から復元
+#   ※ mas の前提: App Store にサインイン済み & Spotlight 有効(mdutil -s / で確認。
+#      無効だと mas が既存アプリを認識できず再インストールを試みて失敗する)
+sudo nix run nix-darwin -- switch --flake .#minamisawa-macbook
 ```
 
-> `install.sh` は既存実体を `*.backup` に退避してから symlink。既存 symlink は張り直し。再実行可。
+> 2回目以降は `home-manager switch --flake .#aki` / `sudo darwin-rebuild switch --flake .#minamisawa-macbook` だけでよい。
+> パッケージ宣言の正: CLI ツール = `nix/home.nix` の home.packages、brew/cask/mas = `nix/darwin.nix` の homebrew ブロック。旧 `install.sh`・`home/Brewfile` は廃止済み。
 
 ## 3. コードリポジトリの一括 clone
 
