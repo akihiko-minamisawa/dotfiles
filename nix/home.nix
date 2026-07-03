@@ -12,6 +12,18 @@
     # Extra completion definitions; land in the nix profile's
     # share/zsh/site-functions, which home-manager already puts on fpath.
     zsh-completions
+    # Standalone CLIs migrated off Homebrew (wave 1). Plain packages, no
+    # programs.* modules, to keep exact behavior parity with the brew installs.
+    fzf
+    gh
+    ghq
+    git-filter-repo
+    go-migrate # brew golang-migrate; installs the `migrate` binary
+    lazygit
+    sl
+    tree
+    yq-go # brew yq (mikefarah Go implementation), not the Python yq
+    zk
   ];
 
   programs.home-manager.enable = true;
