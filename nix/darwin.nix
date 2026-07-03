@@ -87,9 +87,6 @@
       "gnupg"
       "mysql-client"
       "yarn"
-      # CLIs migrating together with their configs (home-manager modules)
-      "neovim"
-      "tmux"
       # required by masApps below
       "mas"
     ];

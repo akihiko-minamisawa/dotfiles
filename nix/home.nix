@@ -27,6 +27,10 @@
     # was brew azure/kubelogin/kubelogin; moved off brew when tap trust
     # enforcement broke `brew bundle` (see darwin.nix)
     kubelogin
+    # editors/multiplexer, migrated together with their configs (which live
+    # as out-of-store symlinks under xdg.configFile below)
+    neovim
+    tmux
   ];
 
   programs.home-manager.enable = true;
@@ -181,6 +185,24 @@
     };
   };
 
-  # git hooks are not covered by the programs.git module; link them in directly.
-  xdg.configFile."git/hooks".source = ./git/hooks;
+  xdg.configFile = let
+    # Live-editable configs, declared here but kept OUT of the nix store:
+    # ~/.config/<name> symlinks straight into the repo checkout (the same
+    # layout install.sh used to create). nvim requires this — lazy.nvim
+    # writes lazy-lock.json into the config dir, and a store path would be
+    # read-only. The rest are tweaked in place often enough that
+    # edit-without-switch is worth more than store purity.
+    live = path: config.lib.file.mkOutOfStoreSymlink
+      "${config.home.homeDirectory}/dev/src/github.com/akihiko-minamisawa/dotfiles/home/.config/${path}";
+  in {
+    # git hooks are not covered by the programs.git module; link them in directly.
+    "git/hooks".source = ./git/hooks;
+
+    "ghostty".source = live "ghostty";
+    "nix".source = live "nix";
+    "nvim".source = live "nvim";
+    "tmux".source = live "tmux";
+    "wezterm".source = live "wezterm";
+    "zk".source = live "zk";
+  };
 }
