@@ -1,6 +1,10 @@
 -- Basic Neovim options
 local opt = vim.opt
 
+-- Leader key (must be set BEFORE any <leader> keymaps are defined)
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
 -- Line numbers
 opt.number = true
 opt.relativenumber = true
@@ -45,13 +49,22 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHo
   command = "checktime",
 })
 
+-- Diagnostics: rounded border so float stays readable against transparent NormalFloat bg
+vim.diagnostic.config({
+  float = { border = "rounded" },
+})
+
+-- Diagnostics keymaps (global; work regardless of which LSP attaches)
+vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end,
+  { desc = "Previous diagnostic" })
+vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end,
+  { desc = "Next diagnostic" })
+vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float,
+  { desc = "Show diagnostic float" })
+
 -- Split windows
 opt.splitright = true
 opt.splitbelow = true
-
--- Leader key
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
 
 -- Java environment for JDTLS (managed by mise)
 -- Use JAVA_HOME from environment if available

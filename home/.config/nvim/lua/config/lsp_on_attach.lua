@@ -22,10 +22,8 @@ local on_attach = function(_, bufnr)
     vim.lsp.buf.format({ async = true })
   end, opts)
 
-  -- Diagnostics
-  vim.keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, opts)
-  vim.keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, opts)
-  vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float, opts)
+  -- (Diagnostics keymaps are defined globally in config/options.lua so they
+  --  also work for LSP clients that don't go through this on_attach, e.g. zk.)
 end
 
 return on_attach
