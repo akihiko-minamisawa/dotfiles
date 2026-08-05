@@ -3,10 +3,42 @@
     "commit": "",
     "pr": ""
   },
+  "model": "claude-fable-5[1m]",
   "statusLine": {
     "type": "command",
     "command": "sh ~/.claude/statusline.sh"
   },
+  "enabledPlugins": {
+    "bff-local-env@xn6-cc-marketplace": false,
+    "notion@claude-plugins-official": false,
+    "datadog@claude-plugins-official": true,
+    "tmux-agent-sidebar@hiroppy": true,
+    "mac-tools@xn6-cc-marketplace": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "xn6-cc-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "A-CMS/xn6-cc-marketplace"
+      }
+    },
+    "hiroppy": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/aki/.tmux/plugins/tmux-agent-sidebar"
+      }
+    }
+  },
+  "effortLevel": "xhigh",
+  "tui": "fullscreen",
+  "skipWorkflowUsageWarning": true,
   "theme": "dark-daltonized",
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true
 }
