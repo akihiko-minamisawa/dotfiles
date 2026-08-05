@@ -10,7 +10,7 @@ return {
       "nvim-jdtls",
       "gitsigns.nvim",
       "nvim-highlight-colors",
-      "neo-tree.nvim",
+      "oil.nvim",
     },
   },
 }
