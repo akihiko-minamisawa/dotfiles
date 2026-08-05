@@ -3,12 +3,10 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    # Extra nixpkgs revisions pinned for the per-project devShells below —
-    # exact runtime patch versions that the main (moving) nixpkgs no longer
-    # carries. Find a rev for a version at https://www.nixhub.io.
-    # 2026-05 snapshot: nodejs_24 24.14.1 (nissan-vpa .nvmrc). Same rev the
-    # main input was locked to when this pin was added; kept separate so
-    # `nix flake update` can't drift the project shell off its pinned patch.
+    # Dated nixpkgs pins for the devShells below: exact runtime patches the
+    # moving nixpkgs no longer carries (find a rev at https://www.nixhub.io).
+    # Kept separate so `nix flake update` can't drift a project shell.
+    # 2026-05 snapshot: nodejs_24 24.14.1 (nissan-vpa .nvmrc)
     nixpkgs-2605.url = "github:NixOS/nixpkgs/68a8af93ff4297686cb68880845e61e5e2e41d92";
     # 2025-05 snapshot: temurin-bin-17 17.0.14 + maven 3.9.9 (BFF),
     # nodejs_20 20.19.0 (nissan-vpa-idp-proxy .nvmrc)
@@ -25,10 +23,8 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # hunk (hunk.dev): review-first terminal diff viewer. Not in nixpkgs yet,
-    # so it comes straight from the upstream flake (main = beta line, source
-    # build via bun2nix). Ships a home-manager module — wired into
-    # homeConfigurations below, configured as programs.hunk in nix/home.nix.
+    # hunk (hunk.dev): terminal diff viewer. Not in nixpkgs yet, so consumed
+    # from the upstream flake; its home-manager module is wired in below.
     hunk = {
       url = "github:modem-dev/hunk";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -42,8 +38,7 @@
       pkgs2605 = nixpkgs-2605.legacyPackages.${system};
       pkgs2505 = nixpkgs-2505.legacyPackages.${system};
       pkgs2309 = nixpkgs-2309.legacyPackages.${system};
-      # Plain import, not legacyPackages: terraform is BUSL-licensed and needs
-      # the unfree allowance, which legacyPackages can't carry.
+      # plain import: terraform is unfree (BUSL), legacyPackages can't allow it
       pkgs2406 = import nixpkgs-2406 {
         inherit system;
         config.allowUnfree = true;
@@ -51,8 +46,6 @@
     in {
       homeConfigurations.aki = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        # hunk's module defaults programs.hunk.package to the flake's own
-        # build, so home.nix only has to flip programs.hunk.enable.
         modules = [ ./nix/home.nix hunk.homeManagerModules.default ];
       };
 
@@ -60,15 +53,11 @@
         modules = [ ./nix/darwin.nix ];
       };
 
-      # Per-project toolchains (replaced mise). A work repo opts in with a
-      # one-line .envrc — `use flake <this repo>#<shell>` — which direnv
-      # activates on cd (.envrc and .direnv/ are globally gitignored, so
-      # A-CMS repos stay clean). Runtimes are pinned to the exact patch via
-      # the dated nixpkgs inputs above; `nix flake update` moves the main
-      # nixpkgs but never these shells.
+      # Per-project toolchains. A work repo opts in with a one-line .envrc —
+      # `use flake <this repo>#<shell>` — activated by direnv on cd (.envrc
+      # and .direnv/ are globally gitignored, so A-CMS repos stay clean).
       devShells.${system} = {
-        # JP BFF services (nissan-bff-repos): pom.xml java.version=17.
-        # Mirrors the retired mise toolchain: temurin 17.0.14, maven 3.9.9.
+        # JP BFF services (nissan-bff-repos): pom.xml java.version=17
         bff = pkgs.mkShell {
           packages = [ pkgs2505.temurin-bin-17 pkgs2505.maven ];
           JAVA_HOME = pkgs2505.temurin-bin-17.home;

@@ -3,17 +3,14 @@
 {
   nixpkgs.hostPlatform = "aarch64-darwin";
 
-  # The Nix installation itself is managed externally (official multi-user
-  # daemon). Keep nix-darwin from rewriting /etc/nix/nix.conf so the manual
-  # `ssl-cert-file = /etc/ssl/cert.pem` (required for substitution to work on
-  # this machine) is preserved.
+  # Nix itself is managed externally (official daemon). Keep nix-darwin off
+  # /etc/nix/nix.conf so the manual `ssl-cert-file` fix (required for
+  # substitution on this machine) survives.
   nix.enable = false;
 
-  # home-manager owns the user shell (compinit, plugins, prompt). Keep
-  # nix-darwin from managing /etc/zshrc + /etc/bashrc: its generated /etc/zshrc
-  # runs a second `compinit` + `prompt suse`, which would double-initialize
-  # against the home-manager setup. Disabling also leaves the official Nix
-  # installer's /etc/zshrc block (nix-daemon PATH bootstrap) untouched.
+  # home-manager owns the user shell; nix-darwin's /etc/zshrc would run a
+  # second compinit against it. Disabling also leaves the Nix installer's
+  # /etc/zshrc block untouched.
   programs.zsh.enable = false;
   programs.bash.enable = false;
 
@@ -21,27 +18,20 @@
   system.stateVersion = 7;
 
   # Declarative Homebrew: darwin-rebuild switch drives `brew bundle` over this
-  # inventory, replacing the hand-maintained home/Brewfile. Casks and Mac App
-  # Store apps stay on brew/mas (no nixpkgs equivalent on macOS); the brews
-  # below are kept on brew deliberately — build-time libraries (gdal/postgis
-  # stack) that local pip/cmake builds link against, and services under
-  # `brew services` (postgresql/redis/rabbitmq). Standalone CLIs go to
-  # home.packages instead and must NOT be listed here; pinned per-project
-  # tools (terraform etc.) go to the devShells in flake.nix.
+  # inventory. Casks and Mac App Store apps stay on brew/mas; the brews below
+  # stay deliberately — build-time libraries local builds link against, and
+  # `brew services`. Standalone CLIs go to home.packages instead and must NOT
+  # be listed here; pinned per-project tools go to the devShells in flake.nix.
   homebrew = {
     enable = true;
 
     onActivation = {
-      # Known failure mode of autoUpdate = false: cask definitions come from
-      # the live API and eventually use DSL the pinned brew doesn't know —
-      # a switch then fails with `undefined method '...' for Cask`. Cure:
-      # run `brew update` manually and switch again (hit 2026-08-05,
-      # `command_wrapper` in drawio needed brew 6.0.11 -> 6.0.15).
+      # If a switch fails with `undefined method '...' for Cask`, the pinned
+      # brew is too old for the live cask DSL: `brew update`, then retry.
       autoUpdate = false;
       upgrade = false;
-      # Uninstall anything not declared here (dry-run verified 2026-07-03:
-      # inventory matches reality, nothing would be removed today). Not "zap"
-      # — that would also purge cask app data via zap stanzas.
+      # Uninstall anything not declared here. Not "zap" — that would also
+      # purge cask app data.
       cleanup = "uninstall";
     };
 
@@ -71,15 +61,12 @@
       { name = "postgresql@14"; restart_service = "changed"; }
       "rabbitmq"
       "redis"
-      # kept on brew: pure dependency of the rabbitmq service above — a nix
-      # copy would only shadow-duplicate it (same reasoning as gnupg below).
+      # rabbitmq dependency; a nix copy would only shadow-duplicate it
       "erlang"
-      # kept on brew deliberately: the zshrc PATH entry points at
-      # /opt/homebrew/opt/mysql-client (no clean client-only nixpkgs package)
+      # the zshrc PATH entry points here (no client-only nixpkgs package)
       "mysql-client"
-      # kept on brew: hard dependency of the geo stack (gdal/poppler/postgis
-      # refuse to let it go), so a nix copy would only shadow-duplicate it.
-      # Keyring data (~/.gnupg) is binary-independent anyway.
+      # geo-stack dependency; a nix copy would only shadow-duplicate it
+      # (keyring data in ~/.gnupg is binary-independent)
       "gnupg"
       # required by masApps below
       "mas"
