@@ -1,3 +1,4 @@
+font-family = "PlemolJP Console NF"
 font-size = 12
 window-width = 240
 window-height = 60
@@ -5,6 +6,7 @@ background = 000000
 background-opacity = 0.75
 background-blur-radius = 20
 macos-titlebar-style = hidden
+macos-option-as-alt = left
 
 # Color scheme
 foreground = c0c0c0
