@@ -24,15 +24,20 @@
   # inventory, replacing the hand-maintained home/Brewfile. Casks and Mac App
   # Store apps stay on brew/mas (no nixpkgs equivalent on macOS); the brews
   # below are kept on brew deliberately — build-time libraries (gdal/postgis
-  # stack) that local pip/cmake builds link against, services under
-  # `brew services` (postgresql/redis/rabbitmq), container tooling tied to
-  # Rancher Desktop, and version managers that self-manage installs
-  # (tfenv/sdkman). Standalone CLIs are migrated to home.packages instead and
-  # must NOT be listed here.
+  # stack) that local pip/cmake builds link against, and services under
+  # `brew services` (postgresql/redis/rabbitmq). Standalone CLIs are migrated
+  # to home.packages instead and must NOT be listed here (wave 3, 2026-08-04,
+  # moved the container/VM tooling and flyway there; tfenv retired in favor of
+  # a pinned terraform devShell in flake.nix, same pattern that replaced mise).
   homebrew = {
     enable = true;
 
     onActivation = {
+      # Known failure mode of autoUpdate = false: cask definitions come from
+      # the live API and eventually use DSL the pinned brew doesn't know —
+      # a switch then fails with `undefined method '...' for Cask`. Cure:
+      # run `brew update` manually and switch again (hit 2026-08-05,
+      # `command_wrapper` in drawio needed brew 6.0.11 -> 6.0.15).
       autoUpdate = false;
       upgrade = false;
       # Uninstall anything not declared here (dry-run verified 2026-07-03:
@@ -67,21 +72,17 @@
       { name = "postgresql@14"; restart_service = "changed"; }
       "rabbitmq"
       "redis"
-      # container / VM tooling (Rancher Desktop integration)
-      "docker-buildx"
-      "docker-compose"
-      "podman"
-      "podman-compose"
-      "qemu"
-      # language runtimes / dev platforms
+      # kept on brew: pure dependency of the rabbitmq service above — a nix
+      # copy would only shadow-duplicate it (same reasoning as gnupg below).
       "erlang"
-      "flyway"
-      "openjdk"
-      # version managers that manage their own installs
-      # (sdkman dropped 2026-07-03: untrusted-tap refusal broke brew bundle;
-      # Java is covered by the declared openjdk + mise. kubelogin moved to
-      # nixpkgs for the same reason. Both taps removed with them.)
-      "tfenv"
+      # (dropped in wave 3, 2026-08-04: docker-buildx/docker-compose deleted
+      # outright — Rancher Desktop's ~/.rd/bin copies were the ones actually
+      # resolving, both on PATH and via the ~/.docker/cli-plugins symlinks, so
+      # the brew pair was dead weight. podman/podman-compose/qemu/flyway moved
+      # to home.packages; openjdk left with flyway, its only consumer. tfenv
+      # replaced by the pinned terraform devShell in flake.nix.
+      # Historical: sdkman dropped 2026-07-03 when untrusted-tap refusal broke
+      # brew bundle; kubelogin moved to nixpkgs then for the same reason.)
       # kept on brew deliberately: the zshrc PATH entry points at
       # /opt/homebrew/opt/mysql-client (no clean client-only nixpkgs package)
       "mysql-client"
@@ -116,6 +117,10 @@
       "pgadmin4"
       "postman"
       "pritunl"
+      # both had been ad-hoc installs and were swept by the wave 3 cleanup;
+      # redeclared 2026-08-05 (Raycast's settings survived the sweep).
+      "raspberry-pi-imager"
+      "raycast"
       "sublime-text"
       "visual-studio-code"
       "visual-studio-code@insiders"
@@ -137,7 +142,9 @@
       "Numbers" = 409203825;
       "OneDrive" = 823766827;
       "Pages" = 409201541;
-      "RunCat" = 1429033973;
+      # RunCat's original listing (1429033973) was pulled from the App Store;
+      # RunCat Neo is its successor app under a new ADAM ID (2026-08-05).
+      "RunCat Neo" = 6757801838;
       "Xcode" = 497799835;
     };
   };

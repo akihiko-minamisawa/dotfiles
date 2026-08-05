@@ -37,6 +37,31 @@
     # extensions live in ~/.azure, unaffected by the binary swap
     azure-cli
     gemini-cli
+    # wave 3: containers/CLI off brew. podman 5.8.2, podman-compose 1.5.0 and
+    # qemu 10.2.2 matched the brew versions exactly at migration (same-version
+    # swaps); flyway moved 12.4.0 -> 12.0.0. Dropping brew flyway also dropped
+    # brew openjdk, which existed only as flyway's dependency (the global java
+    # stays the temurin-bin below). The podman client talks to the running
+    # machine over ssh, so the swap didn't touch the VM or its containers.
+    flyway
+    podman
+    podman-compose
+    qemu
+    # NOT bundled by nix podman (its libexec ships only gvproxy/gvforwarder/
+    # qemu-wrapper), but the existing podman machine is applehv and needs
+    # vfkit to start. Found via helper_binaries_dir in
+    # ~/.config/containers/containers.conf — that file is live podman state,
+    # deliberately not home-manager managed.
+    vfkit
+    # TUI tools that had been ad-hoc `brew install`ed and were swept away by
+    # the wave 3 darwin switch (cleanup = "uninstall" removes anything
+    # undeclared) — restored here as declared nix packages. Slightly behind
+    # the brew versions at restore time (lazysql 0.4.9 vs 0.5.5, rainfrog
+    # 0.3.18 vs 0.4.2). ffmpeg/imagemagick/sevenzip were swept too and
+    # deliberately NOT restored.
+    lazysql
+    rainfrog
+    yazi
     # yarn classic; bundles its own node for running itself. Project builds
     # use whatever node is on PATH (a devShell node, else the global one
     # below). Dropping brew yarn also drops brew node, which existed only as
