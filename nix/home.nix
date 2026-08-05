@@ -19,7 +19,9 @@
     ghq
     git-filter-repo
     go-migrate # brew golang-migrate; installs the `migrate` binary
-    lazygit
+    # lazygit moved to programs.lazygit below — it needs a config.yml (delta as
+    # its pager), and the module knows darwin puts that under
+    # ~/Library/Application Support rather than ~/.config.
     sl
     tree
     yq-go # brew yq (mikefarah Go implementation), not the Python yq
@@ -36,9 +38,19 @@
     azure-cli
     gemini-cli
     # yarn classic; bundles its own node for running itself. Project builds
-    # keep using mise-managed node via PATH. Dropping brew yarn also drops
-    # brew node, which existed only as yarn's dependency.
+    # use whatever node is on PATH (a devShell node, else the global one
+    # below). Dropping brew yarn also drops brew node, which existed only as
+    # yarn's dependency.
     yarn
+    # Global fallback runtimes, mirroring the retired mise global config
+    # (node 22 / java 21 / maven / go). Per-project versions come from the
+    # devShells in flake.nix via direnv; these cover everything outside a
+    # project shell — nvim LSP servers and plugins need a node on PATH, and
+    # ad-hoc `java`/`mvn`/`go` in random directories should still work.
+    nodejs_22
+    temurin-bin # jdk 21 LTS
+    maven
+    go
   ];
 
   programs.home-manager.enable = true;
@@ -50,12 +62,14 @@
     settings = builtins.fromTOML (builtins.readFile ./starship.toml);
   };
 
-  # mise activation, previously run via sheldon (`eval "$(mise activate zsh)"`).
-  # Moves mise off Homebrew onto nixpkgs; installed tool versions live in
-  # ~/.local/share/mise and are independent of which mise binary reads them.
-  programs.mise = {
+  # direnv + nix-direnv: per-project toolchains via the devShells in flake.nix
+  # (replaced mise). A work repo opts in with a gitignored one-line .envrc —
+  # `use flake ~/dev/src/github.com/akihiko-minamisawa/dotfiles#bff` — and the
+  # runtime set swaps on cd, like mise did. nix-direnv caches the evaluated
+  # env under the repo's .direnv/, so re-entering a directory is instant.
+  programs.direnv = {
     enable = true;
-    enableZshIntegration = true;
+    nix-direnv.enable = true;
   };
 
   programs.zsh = {
@@ -70,8 +84,10 @@
       emacs = "nvim";
       code = "nvim";
       # Claude Code workspace launchers (~/cc = general AI assistant workspace).
-      # `cl` chosen over `cc` to avoid shadowing /usr/bin/cc (the C compiler).
-      cl = "cd ~/cc && claude";
+      # Intentionally shadows /usr/bin/cc (the C compiler) at the interactive
+      # prompt; build tools (make/cmake/node-gyp) ignore shell aliases and still
+      # resolve the real /usr/bin/cc via PATH, so direct compilation is unaffected.
+      cc = "cd ~/cc && claude";
     };
 
     sessionVariables = {
@@ -90,6 +106,17 @@
         ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
         export PATH="/Users/aki/.rd/bin:$PATH"
         ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+
+        # nix CLI bootstrap (/nix/var/nix/profiles/default/bin + NIX_SSL_CERT_FILE
+        # etc). The official installer put this in /etc/zshrc, but macOS updates
+        # rewrite that file and silently drop the block (bit us 2026-06-25:
+        # `nix` vanished from zsh PATH). Owning it here survives OS updates;
+        # the script's __ETC_PROFILE_NIX_SOURCED guard makes it a no-op when
+        # the /etc/zshrc copy is intact. Sourced before the prepend below so
+        # the user profile still ends up first.
+        if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+          . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+        fi
 
         # Nix profiles first: macOS path_helper (/etc/zprofile) reorders system
         # dirs to the front, leaving ~/.nix-profile/bin dead last — so any
@@ -148,6 +175,7 @@
             nvim "$file"
           fi
         }
+
     '';
   };
 
@@ -172,9 +200,13 @@
       "!.vscode/launch.json"
       "!.vscode/extensions.json"
       ""
-      "# mise"
+      "# mise (retired; ignores kept so stale local files stay invisible)"
       ".mise.local.toml"
       ".mise.*.local.toml"
+      ""
+      "# direnv (per-project devShells; .envrc is machine-local by design)"
+      ".envrc"
+      ".direnv/"
       ""
       "# Claude Code"
       "**/.claude/settings.local.json"
@@ -195,7 +227,57 @@
       init.defaultBranch = "main";
       commit.template = "~/.stCommitMsg";
       ghq.root = "~/dev/src";
+
+      # Diff quality knobs that need no extra tooling. histogram beats the
+      # default myers on the reformat-heavy Java diffs in the BFF repos, and
+      # colorMoved paints pure code moves in a separate color so "this block
+      # just relocated" stops reading as an add plus a delete during review.
+      diff = {
+        algorithm = "histogram";
+        colorMoved = "default";
+        colorMovedWS = "allow-indentation-change";
+        mnemonicPrefix = true;
+        renames = "copies";
+      };
+
+      # side-by-side is off globally because lazygit's diff pane is too narrow
+      # for it (delta reads these same [delta] keys when lazygit invokes it).
+      # `git ds` opts in for the occasional full-width read.
+      alias.ds = "-c delta.side-by-side=true diff";
     };
+  };
+
+  # delta: the pager layer. enableGitIntegration points the blame/diff/log/show
+  # pagers and interactive.diffFilter at delta, so plain diffs and `git add -p`
+  # both render through it from one declaration. Set explicitly because the
+  # module deprecated inferring it. Note gh has its own pager and is NOT
+  # covered by this — `gh pr diff N | delta` for PRs.
+  programs.delta = {
+    enable = true;
+    enableGitIntegration = true;
+    options = {
+      # n/N jumps file to file in the CLI pager. Deliberately not repeated in
+      # the lazygit pager string below — upstream documents --navigate as
+      # non-functional there, so it would be dead config.
+      navigate = true;
+      line-numbers = true;
+      hyperlinks = true;
+      side-by-side = false;
+      syntax-theme = "Nord";
+    };
+  };
+
+  programs.lazygit = {
+    enable = true;
+    settings.git.pagers = [
+      {
+        # --paging=never because lazygit does its own scrolling. The
+        # lazygit-edit:// link format turns file paths in the diff pane into
+        # clickable targets that open nvim at that line, which is the whole
+        # reason for wiring hyperlinks through here.
+        pager = ''delta --dark --paging=never --line-numbers --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"'';
+      }
+    ];
   };
 
   # ~/.claude: live Claude Code state (settings/skills tracked in the repo;
