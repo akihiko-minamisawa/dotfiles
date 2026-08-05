@@ -267,6 +267,14 @@
     };
   };
 
+  # hunk (hunk.dev): review-first terminal diff viewer for agent-authored
+  # changesets. Module + package come from the upstream flake (wired in
+  # flake.nix). Integration toggles stay off: enableGitIntegration would
+  # steal git core.pager from delta above, and enableClaudeIntegration
+  # writes into ~/.claude, which is an out-of-store symlink here (below) —
+  # home-manager would collide trying to nest store files inside it.
+  programs.hunk.enable = true;
+
   programs.lazygit = {
     enable = true;
     settings.git.pagers = [

@@ -23,9 +23,17 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # hunk (hunk.dev): review-first terminal diff viewer. Not in nixpkgs yet,
+    # so it comes straight from the upstream flake (main = beta line, source
+    # build via bun2nix). Ships a home-manager module — wired into
+    # homeConfigurations below, configured as programs.hunk in nix/home.nix.
+    hunk = {
+      url = "github:modem-dev/hunk";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { nixpkgs, nixpkgs-2605, nixpkgs-2505, nixpkgs-2309, nix-darwin, home-manager, ... }:
+  outputs = { nixpkgs, nixpkgs-2605, nixpkgs-2505, nixpkgs-2309, nix-darwin, home-manager, hunk, ... }:
     let
       system = "aarch64-darwin";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -35,7 +43,9 @@
     in {
       homeConfigurations.aki = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        modules = [ ./nix/home.nix ];
+        # hunk's module defaults programs.hunk.package to the flake's own
+        # build, so home.nix only has to flip programs.hunk.enable.
+        modules = [ ./nix/home.nix hunk.homeManagerModules.default ];
       };
 
       darwinConfigurations."minamisawa-macbook" = nix-darwin.lib.darwinSystem {
