@@ -12,4 +12,3 @@ home/.claude/*
 # Work-specific Claude skills stay local (this repo is public)
 home/.claude/skills/bff-study/
 home/.claude/skills/osint-triage/
-home/.claude/skills/vim-coach/
