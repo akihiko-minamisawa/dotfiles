@@ -15,8 +15,7 @@
     nixpkgs-2505.url = "github:NixOS/nixpkgs/b3582c75c7f21ce0b429898980eddbbf05c68e55";
     # 2023-09 snapshot: nodejs_20 20.8.0 (ngx-OMAKASE .node-version)
     nixpkgs-2309.url = "github:NixOS/nixpkgs/c182df2e68bd97deb32c7e4765adfbbbcaf75b60";
-    # 2024-06 snapshot: terraform 1.8.5 — the exact version the retired tfenv
-    # had pinned (wave 3, 2026-08-04). Consumed by the terraform devShell.
+    # 2024-06 snapshot: terraform 1.8.5 (terraform devShell below)
     nixpkgs-2406.url = "github:NixOS/nixpkgs/b60793b86201040d9dee019a05089a9150d08b5b";
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin";
@@ -82,10 +81,8 @@
         ngx-omakase = pkgs.mkShell { packages = [ pkgs2309.nodejs_20 ]; };
         # Go work: no repo pins a patch version today, so track main nixpkgs
         go = pkgs.mkShell { packages = [ pkgs.go ]; };
-        # terraform 1.8.5, replacing tfenv (which had exactly this version
-        # installed and selected). No repo carries .tf files today, so no
-        # .envrc opts in anywhere — reach it ad hoc with
-        # `nix develop ~/dev/src/github.com/akihiko-minamisawa/dotfiles#terraform`.
+        # No repo carries .tf files today, so no .envrc opts in anywhere —
+        # reach it ad hoc with `nix develop <this flake>#terraform`.
         terraform = pkgs.mkShell { packages = [ pkgs2406.terraform ]; };
       };
     };

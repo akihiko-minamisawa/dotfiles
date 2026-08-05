@@ -27,7 +27,7 @@
     yq-go # brew yq (mikefarah Go implementation), not the Python yq
     zk
     # was brew azure/kubelogin/kubelogin; moved off brew when tap trust
-    # enforcement broke `brew bundle` (see darwin.nix)
+    # enforcement broke `brew bundle`
     kubelogin
     # editors/multiplexer, migrated together with their configs (which live
     # as out-of-store symlinks under xdg.configFile below)
@@ -37,12 +37,7 @@
     # extensions live in ~/.azure, unaffected by the binary swap
     azure-cli
     gemini-cli
-    # wave 3: containers/CLI off brew. podman 5.8.2, podman-compose 1.5.0 and
-    # qemu 10.2.2 matched the brew versions exactly at migration (same-version
-    # swaps); flyway moved 12.4.0 -> 12.0.0. Dropping brew flyway also dropped
-    # brew openjdk, which existed only as flyway's dependency (the global java
-    # stays the temurin-bin below). The podman client talks to the running
-    # machine over ssh, so the swap didn't touch the VM or its containers.
+    # wave 3: container/VM tooling and standalone dev CLIs off brew
     flyway
     podman
     podman-compose
@@ -53,12 +48,7 @@
     # ~/.config/containers/containers.conf — that file is live podman state,
     # deliberately not home-manager managed.
     vfkit
-    # TUI tools that had been ad-hoc `brew install`ed and were swept away by
-    # the wave 3 darwin switch (cleanup = "uninstall" removes anything
-    # undeclared) — restored here as declared nix packages. Slightly behind
-    # the brew versions at restore time (lazysql 0.4.9 vs 0.5.5, rainfrog
-    # 0.3.18 vs 0.4.2). ffmpeg/imagemagick/sevenzip were swept too and
-    # deliberately NOT restored.
+    # TUI tools
     lazysql
     rainfrog
     yazi
