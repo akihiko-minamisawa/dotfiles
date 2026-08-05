@@ -49,6 +49,21 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHo
   command = "checktime",
 })
 
+-- Auto-create parent directories on save
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = vim.api.nvim_create_augroup("auto_mkdir", { clear = true }),
+  callback = function(event)
+    if event.match:match("^%w%w+://") then
+      return -- skip virtual paths (oil://, scp://, etc.)
+    end
+    local file = vim.uv.fs_realpath(event.match) or event.match
+    local dir = vim.fn.fnamemodify(file, ":p:h")
+    if vim.fn.isdirectory(dir) == 0 then
+      vim.fn.mkdir(dir, "p")
+    end
+  end,
+})
+
 -- Diagnostics: rounded border so float stays readable against transparent NormalFloat bg
 vim.diagnostic.config({
   float = { border = "rounded" },
