@@ -13,29 +13,21 @@
     fzf
     gh
     ghq
-    git-filter-repo
-    go-migrate # installs the `migrate` binary
     # (lazygit is configured via programs.lazygit below)
-    sl
-    tree
     yq-go # mikefarah Go implementation, not the Python yq
     zk
     kubelogin
     neovim
     tmux
     azure-cli
-    gemini-cli
-    flyway
     podman
     podman-compose
-    qemu
     # not bundled by nix podman; the applehv machine finds it via
     # helper_binaries_dir in ~/.config/containers/containers.conf
     vfkit
     # TUI tools
     lazysql
     rainfrog
-    yazi
     # yarn classic; bundles its own node for itself, project builds use
     # whatever node is on PATH (a devShell node, else the global one below)
     yarn

@@ -59,10 +59,6 @@
       "unbound"
       # services (brew services)
       { name = "postgresql@14"; restart_service = "changed"; }
-      "rabbitmq"
-      "redis"
-      # rabbitmq dependency; a nix copy would only shadow-duplicate it
-      "erlang"
       # the zshrc PATH entry points here (no client-only nixpkgs package)
       "mysql-client"
       # geo-stack dependency; a nix copy would only shadow-duplicate it
@@ -73,53 +69,34 @@
     ];
 
     casks = [
-      "antigravity"
       "battery"
       "bruno"
       "claude"
       "claude-code"
-      "cursor"
       "deepl"
-      "devtoys"
-      "drawio"
       "firefox"
       "font-plemol-jp-nf"
       "gcloud-cli"
       "ghostty"
-      "github-copilot-for-xcode"
-      "intellij-idea"
+      "google-chrome"
+      "google-drive"
       "intune-company-portal"
       "microsoft-auto-update"
-      "obsidian"
-      "openvpn-connect"
-      "pgadmin4"
-      "postman"
-      "pritunl"
+      "notion"
+      "ollama-app"
       "raspberry-pi-imager"
       "raycast"
-      "sublime-text"
-      "visual-studio-code"
-      "visual-studio-code@insiders"
+      "slack"
       "wezterm@nightly"
     ];
 
     masApps = {
       "Azure VPN Client" = 1553936137;
-      "GarageBand" = 682658836;
-      "iMovie" = 408981434;
-      "Keynote" = 409183694;
       "Kindle" = 302584613;
       "LINE" = 539883307;
       "Microsoft Excel" = 462058435;
-      "Microsoft OneNote" = 784801555;
       "Microsoft Outlook" = 985367838;
-      "Microsoft PowerPoint" = 462062816;
-      "Microsoft Word" = 462054704;
-      "Numbers" = 409203825;
-      "OneDrive" = 823766827;
-      "Pages" = 409201541;
       "RunCat Neo" = 6757801838;
-      "Xcode" = 497799835;
     };
   };
 }
