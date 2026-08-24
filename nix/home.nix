@@ -148,6 +148,11 @@
           fi
         }
 
+        # Work-specific helpers live outside version control (this repo is
+        # public); absent on a fresh machine, so the guard is load-bearing.
+        if [[ -f "$HOME/dev/src/github.com/akihiko-minamisawa/dotfiles/home/.zshrc.local" ]]; then
+          source "$HOME/dev/src/github.com/akihiko-minamisawa/dotfiles/home/.zshrc.local"
+        fi
     '';
   };
 
