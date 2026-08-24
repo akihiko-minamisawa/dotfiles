@@ -6,8 +6,8 @@ config.font_size = 12.0
 config.initial_cols = 240
 config.initial_rows = 60
 config.use_ime = true
-config.window_background_opacity = 0.85
-config.macos_window_background_blur = 20
+config.window_background_opacity = 0.70
+config.macos_window_background_blur = 0
 config.window_decorations = "RESIZE"
 config.hide_tab_bar_if_only_one_tab = true
 
