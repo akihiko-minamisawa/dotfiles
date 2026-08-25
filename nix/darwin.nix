@@ -73,6 +73,9 @@
       "bruno"
       "claude"
       "claude-code"
+      # nixpkgs builds codex from Rust source (no darwin substitute); the cask
+      # is a prebuilt binary and tracks releases, which land often.
+      "codex"
       "deepl"
       "firefox"
       "font-plemol-jp-nf"
