@@ -99,6 +99,9 @@
       "LINE" = 539883307;
       "Microsoft Excel" = 462058435;
       "Microsoft Outlook" = 985367838;
+      # root-owned under /Applications/OneDrive.localized (MDM-deployed), so
+      # cleanup can't trash it — declare it or every switch errors on the retry.
+      "OneDrive" = 823766827;
       "RunCat Neo" = 6757801838;
     };
   };
