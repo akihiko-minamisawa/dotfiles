@@ -52,4 +52,11 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
   }
 end)
 
+-- Window switching: macOS's native Cmd+` cycling does not work inside wezterm, so bind it explicitly
+local act = wezterm.action
+config.keys = {
+  { key = '`', mods = 'CMD',       action = act.ActivateWindowRelative(1) },  -- next window (toggles when there are two)
+  { key = '~', mods = 'CMD|SHIFT', action = act.ActivateWindowRelative(-1) }, -- previous window
+}
+
 return config
